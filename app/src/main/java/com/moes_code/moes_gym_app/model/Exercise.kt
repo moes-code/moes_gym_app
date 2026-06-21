@@ -22,5 +22,21 @@ data class Exercise(
 
     @ColumnInfo(name = "last_trained_at")
     @SerializedName("lastTrainedAt")
-    val lastTrainedAt: Long? = null
+    val lastTrainedAt: Long? = null,
+
+    @ColumnInfo(name = "default_sets")
+    @SerializedName("defaultSets")
+    val defaultSets: Int? = null,
+
+    @ColumnInfo(name = "default_reps")
+    @SerializedName("defaultReps")
+    val defaultReps: Int? = null,
+
+    @ColumnInfo(name = "default_rest_time")
+    @SerializedName("defaultRestTime")
+    val defaultRestTime: Int? = null,
+
+    @ColumnInfo(name = "is_bodyweight")
+    @SerializedName("isBodyweight")
+    val isBodyweight: Boolean = false
 )
