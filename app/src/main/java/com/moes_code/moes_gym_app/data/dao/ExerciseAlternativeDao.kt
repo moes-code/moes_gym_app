@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ExerciseAlternativeDao {
+    // IGNORE: silently skip duplicates from bidirectional pair storage
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(alternative: ExerciseAlternative)
 

@@ -4,13 +4,15 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+kotlin {
+    compilerOptions {
+        moduleName = "com_moes_code_moes_gym_app"
+    }
+}
+
 android {
     namespace = "com.moes_code.moes_gym_app"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.moes_code.moes_gym_app"
@@ -35,9 +37,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        compose = true
     }
 }
 

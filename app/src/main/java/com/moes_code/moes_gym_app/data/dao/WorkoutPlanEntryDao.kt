@@ -23,5 +23,5 @@ interface WorkoutPlanEntryDao {
     suspend fun getEntriesForPlan(planId: Long): List<WorkoutPlanEntry>
 
     @Query("UPDATE workout_plan_entries SET exercise_id = :exerciseId WHERE plan_id = :planId AND position = :position")
-    suspend fun updateExerciseId(planId: Long, position: Int, exerciseId: Long)
+    suspend fun updateExerciseId(planId: Long, position: Int, exerciseId: Long): Int
 }

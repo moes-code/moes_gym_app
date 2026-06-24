@@ -9,7 +9,8 @@ data class WorkoutPlanWithEntriesAndExercises(
 
     @Relation(
         parentColumn = "id",
-        entityColumn = "plan_id"
+        entityColumn = "plan_id",
+        entity = WorkoutPlanEntry::class
     )
     val entries: List<WorkoutPlanEntryWithExercise>
 )

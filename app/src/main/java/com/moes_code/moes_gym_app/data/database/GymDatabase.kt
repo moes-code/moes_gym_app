@@ -44,7 +44,7 @@ abstract class GymDatabase : RoomDatabase() {
 
         fun getInstance(context: Context): GymDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
+                INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     GymDatabase::class.java,
                     "gym_database"
@@ -53,10 +53,7 @@ abstract class GymDatabase : RoomDatabase() {
                         super.onCreate(db)
                         SeedData.populate(db)
                     }
-                })
-                    .build()
-                INSTANCE = instance
-                instance
+                }).build().also { INSTANCE = it }
             }
         }
     }
