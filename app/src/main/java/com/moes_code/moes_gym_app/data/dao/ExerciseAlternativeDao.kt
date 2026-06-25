@@ -1,7 +1,6 @@
 package com.moes_code.moes_gym_app.data.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -15,15 +14,12 @@ interface ExerciseAlternativeDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(alternative: ExerciseAlternative)
 
-    @Delete
-    suspend fun delete(alternative: ExerciseAlternative)
-
     @Query("DELETE FROM exercise_alternatives WHERE exercise_id = :exerciseId AND alternative_id = :alternativeId")
     suspend fun removeAlternative(exerciseId: Long, alternativeId: Long)
 
     @Query(
         """
-        SELECT e.* FROM exercises e
+        SELECT DISTINCT e.* FROM exercises e
         JOIN exercise_alternatives ea ON 
             (ea.exercise_id = e.id OR ea.alternative_id = e.id)
         WHERE (ea.exercise_id = :exerciseId OR ea.alternative_id = :exerciseId)

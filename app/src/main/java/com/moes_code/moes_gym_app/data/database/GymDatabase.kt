@@ -48,7 +48,8 @@ abstract class GymDatabase : RoomDatabase() {
                     context.applicationContext,
                     GymDatabase::class.java,
                     "gym_database"
-                ).addCallback(object : Callback() {
+                ).fallbackToDestructiveMigration()
+                .addCallback(object : Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
                         SeedData.populate(db)

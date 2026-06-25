@@ -1,12 +1,12 @@
 package com.moes_code.moes_gym_app.data.repository
 
+import androidx.room.withTransaction
 import com.moes_code.moes_gym_app.data.dao.ExerciseAlternativeDao
 import com.moes_code.moes_gym_app.data.dao.ExerciseDao
 import com.moes_code.moes_gym_app.data.dao.WorkoutPlanDao
 import com.moes_code.moes_gym_app.data.dao.WorkoutPlanEntryDao
 import com.moes_code.moes_gym_app.data.dao.WorkoutSetDao
 import com.moes_code.moes_gym_app.data.dao.WorkoutSetTemplateDao
-import androidx.room.withTransaction
 import com.moes_code.moes_gym_app.data.database.GymDatabase
 import com.moes_code.moes_gym_app.model.Exercise
 import com.moes_code.moes_gym_app.model.WorkoutPlan
@@ -16,7 +16,6 @@ import com.moes_code.moes_gym_app.model.WorkoutSet
 import com.moes_code.moes_gym_app.model.WorkoutSetTemplate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 
 class GymRepository(private val db: GymDatabase) {
 
@@ -29,11 +28,11 @@ class GymRepository(private val db: GymDatabase) {
 
     fun getAllPlans(): Flow<List<WorkoutPlan>> = workoutPlanDao.getAllPlans()
 
-    fun getPlanWithEntriesAndExercises(planId: Long): Flow<WorkoutPlanWithEntriesAndExercises> {
-        return workoutPlanDao.getPlanWithEntriesAndExercises(planId).map { it ?: error("Plan not found") }
+    fun getPlanWithEntriesAndExercises(planId: Long): Flow<WorkoutPlanWithEntriesAndExercises?> {
+        return workoutPlanDao.getPlanWithEntriesAndExercises(planId)
     }
 
-    fun getAlternativesSorted(exerciseId: Long): Flow<List<Exercise>> {
+    fun getAlternativesSortedByLastTrained(exerciseId: Long): Flow<List<Exercise>> {
         return exerciseAlternativeDao.getAlternativesSortedByLastTrained(exerciseId)
     }
 
@@ -48,17 +47,16 @@ class GymRepository(private val db: GymDatabase) {
     suspend fun rotateExerciseIfNeeded(planId: Long) {
         val plan = workoutPlanDao.getPlanWithEntriesAndExercises(planId).first() ?: return
 
-        for (entryWithExercise in plan.entries) {
-            val currentExerciseId = entryWithExercise.entry.exerciseId
-            val alternatives = exerciseAlternativeDao
-                .getAlternativesSortedByLastTrained(currentExerciseId)
-                .first()
+        db.withTransaction {
+            for (entryWithExercise in plan.entries) {
+                val currentExerciseId = entryWithExercise.entry.exerciseId
+                val alternatives = exerciseAlternativeDao
+                    .getAlternativesSortedByLastTrained(currentExerciseId)
+                    .first()
 
-            if (alternatives.isEmpty()) continue
+                if (alternatives.isEmpty()) continue
 
-            val oldestId = alternatives.first().id
-
-            if (oldestId != currentExerciseId) {
+                val oldestId = alternatives.first().id
                 workoutPlanEntryDao.updateExerciseId(planId, entryWithExercise.entry.position, oldestId)
             }
         }
@@ -83,5 +81,5 @@ class GymRepository(private val db: GymDatabase) {
 
     suspend fun insertWorkoutPlan(plan: WorkoutPlan): Long = workoutPlanDao.insert(plan)
 
-    suspend fun insertWorkoutPlanEntry(entry: WorkoutPlanEntry) = workoutPlanEntryDao.insert(entry)
+    suspend fun insertWorkoutPlanEntry(entry: WorkoutPlanEntry): Long = workoutPlanEntryDao.insert(entry)
 }

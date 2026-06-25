@@ -2,10 +2,14 @@ package com.moes_code.moes_gym_app.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "workout_plans")
+@Entity(
+    tableName = "workout_plans",
+    indices = [Index(value = ["name"])]
+)
 data class WorkoutPlan(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")

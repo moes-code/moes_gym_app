@@ -11,7 +11,7 @@ import com.moes_code.moes_gym_app.model.WorkoutPlanEntry
 @Dao
 interface WorkoutPlanEntryDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(entry: WorkoutPlanEntry)
+    suspend fun insert(entry: WorkoutPlanEntry): Long
 
     @Update
     suspend fun update(entry: WorkoutPlanEntry)
