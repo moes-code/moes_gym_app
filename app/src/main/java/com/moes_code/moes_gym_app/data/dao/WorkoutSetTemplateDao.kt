@@ -22,6 +22,9 @@ interface WorkoutSetTemplateDao {
     @Query("SELECT * FROM workout_set_templates WHERE exercise_id = :exerciseId ORDER BY set_number ASC")
     suspend fun getTemplatesForExercise(exerciseId: Long): List<WorkoutSetTemplate>
 
+    @Query("SELECT * FROM workout_set_templates WHERE exercise_id IN (:exerciseIds) ORDER BY exercise_id, set_number ASC")
+    suspend fun getTemplatesForExercises(exerciseIds: List<Long>): List<WorkoutSetTemplate>
+
     @Query("DELETE FROM workout_set_templates WHERE exercise_id = :exerciseId")
     suspend fun deleteTemplatesForExercise(exerciseId: Long)
 }

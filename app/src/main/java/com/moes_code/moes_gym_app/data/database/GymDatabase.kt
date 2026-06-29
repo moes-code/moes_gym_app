@@ -27,7 +27,7 @@ import com.moes_code.moes_gym_app.model.WorkoutSetTemplate
         WorkoutSet::class,
         WorkoutSetTemplate::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class GymDatabase : RoomDatabase() {
@@ -48,7 +48,7 @@ abstract class GymDatabase : RoomDatabase() {
                     context.applicationContext,
                     GymDatabase::class.java,
                     "gym_database"
-                ).fallbackToDestructiveMigration()
+                ).fallbackToDestructiveMigration(true)
                 .addCallback(object : Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)

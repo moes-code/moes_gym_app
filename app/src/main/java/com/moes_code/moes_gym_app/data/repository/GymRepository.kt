@@ -44,6 +44,10 @@ class GymRepository(private val db: GymDatabase) {
         return workoutSetTemplateDao.getTemplatesForExercise(exerciseId)
     }
 
+    suspend fun getTemplatesForExercises(exerciseIds: List<Long>): List<WorkoutSetTemplate> {
+        return workoutSetTemplateDao.getTemplatesForExercises(exerciseIds)
+    }
+
     suspend fun rotateExerciseIfNeeded(planId: Long) {
         val plan = workoutPlanDao.getPlanWithEntriesAndExercises(planId).first() ?: return
 

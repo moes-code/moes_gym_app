@@ -35,9 +35,13 @@ data class WorkoutSetTemplate(
 
     @ColumnInfo(name = "reps")
     @SerializedName("reps")
-    val reps: Int,
+    val reps: Int?,
 
     @ColumnInfo(name = "rest_time")
     @SerializedName("restTime")
-    val restTime: Int
+    val restTime: Int,
+
+    @ColumnInfo(name = "duration_seconds")
+    @SerializedName("durationSeconds")
+    val durationSeconds: Long? = null
 )

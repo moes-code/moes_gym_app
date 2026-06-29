@@ -39,13 +39,17 @@ data class WorkoutSet(
 
     @ColumnInfo(name = "weight")
     @SerializedName("weight")
-    val weight: Double,
+    val weight: Double?,
 
     @ColumnInfo(name = "reps")
     @SerializedName("reps")
-    val reps: Int,
+    val reps: Int?,
 
     @ColumnInfo(name = "rest_time")
     @SerializedName("restTime")
-    val restTime: Int // in seconds
+    val restTime: Int,
+
+    @ColumnInfo(name = "duration_seconds")
+    @SerializedName("durationSeconds")
+    val durationSeconds: Long? = null
 )
