@@ -30,20 +30,22 @@ class WorkoutSessionViewModel(
     private val _alternatives = MutableStateFlow<List<Exercise>>(emptyList())
     val alternatives: StateFlow<List<Exercise>> = _alternatives.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         viewModelScope.launch {
             repository.rotateExerciseIfNeeded(planId)
-            loadAllTemplates()
+            loadTemplatesFromDb()
+            _isLoading.value = false
         }
     }
 
-    private fun loadAllTemplates() {
-        viewModelScope.launch {
-            val p = plan.first { it != null } ?: return@launch
-            val exerciseIds = p.entries.map { it.entry.exerciseId }
-            val allTemplates = repository.getTemplatesForExercises(exerciseIds)
-            _exerciseTemplates.value = allTemplates.groupBy { it.exerciseId }
-        }
+    private suspend fun loadTemplatesFromDb() {
+        val entries = repository.getEntriesForPlan(planId)
+        val exerciseIds = entries.map { it.exerciseId }
+        val allTemplates = repository.getTemplatesForExercises(exerciseIds)
+        _exerciseTemplates.value = allTemplates.groupBy { it.exerciseId }
     }
 
     fun loadAlternatives(exerciseId: Long) {
@@ -55,14 +57,14 @@ class WorkoutSessionViewModel(
     fun selectAlternative(position: Int, newExerciseId: Long) {
         viewModelScope.launch {
             repository.selectAlternative(planId, position, newExerciseId)
-            loadAllTemplates()
+            loadTemplatesFromDb()
         }
     }
 
     fun logSets(exerciseId: Long, sets: List<WorkoutSet>) {
         viewModelScope.launch {
             repository.logSets(exerciseId, sets)
-            loadAllTemplates()
+            loadTemplatesFromDb()
         }
     }
 }

@@ -2,6 +2,7 @@ package com.moes_code.moes_gym_app.ui.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -64,6 +66,7 @@ fun SessionScreen(
     val plan by viewModel.plan.collectAsState()
     val exerciseTemplates by viewModel.exerciseTemplates.collectAsState()
     val alternatives by viewModel.alternatives.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     var showAlternatives by remember { mutableStateOf(false) }
     var altPosition by remember { mutableIntStateOf(0) }
@@ -80,6 +83,16 @@ fun SessionScreen(
             )
         }
     ) { padding ->
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+            return@Scaffold
+        }
+
         val entries = plan?.entries ?: emptyList()
         LazyColumn(
             modifier = Modifier
@@ -147,15 +160,13 @@ private fun ExerciseCard(
     val exercise = entry.exercise
     var showWeight by remember { mutableStateOf(false) }
 
-    val defaultSets = remember(exercise.id, templates) {
-        if (templates.isNotEmpty()) {
-            templates.map { EditableSet(it.setNumber, restTime = it.restTime) }
-        } else {
-            val count = exercise.defaultSets ?: 1
-            (1..count).map { EditableSet(it, restTime = exercise.defaultRestTime ?: 120) }
-        }
+    val defaultSets = if (templates.isNotEmpty()) {
+        templates.map { EditableSet(it.setNumber, restTime = it.restTime) }
+    } else {
+        val count = exercise.defaultSets ?: 1
+        (1..count).map { EditableSet(it, restTime = exercise.defaultRestTime ?: 120) }
     }
-    var sets by remember { mutableStateOf(defaultSets) }
+    var sets by remember(exercise.id, templates) { mutableStateOf(defaultSets) }
 
     Card(
         modifier = Modifier
@@ -313,7 +324,7 @@ private fun ExerciseSetRow(
         }
 
         Text(
-            text = "${set.restTime}s rest",
+            text = if (set.restTime >= 60) "${set.restTime / 60} min" else "${set.restTime}s",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
