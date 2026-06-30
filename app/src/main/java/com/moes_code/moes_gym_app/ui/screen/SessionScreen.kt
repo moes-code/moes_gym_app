@@ -36,6 +36,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -44,11 +46,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import com.moes_code.moes_gym_app.model.WorkoutPlanEntryWithExercise
 import com.moes_code.moes_gym_app.model.WorkoutSet
 import com.moes_code.moes_gym_app.model.WorkoutSetTemplate
@@ -70,8 +74,11 @@ fun SessionScreen(
 
     var showAlternatives by remember { mutableStateOf(false) }
     var altPosition by remember { mutableIntStateOf(0) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(plan?.plan?.name ?: "Training") },
@@ -105,7 +112,10 @@ fun SessionScreen(
                 ExerciseCard(
                     entry = entry,
                     templates = templates,
-                    onLog = { sets -> viewModel.logSets(entry.entry.exerciseId, sets) },
+                    onLog = { sets ->
+                        viewModel.logSets(entry.entry.exerciseId, sets)
+                        scope.launch { snackbarHostState.showSnackbar("Sets logged") }
+                    },
                     onAlternatives = {
                         viewModel.loadAlternatives(entry.entry.exerciseId)
                         altPosition = entry.entry.position
