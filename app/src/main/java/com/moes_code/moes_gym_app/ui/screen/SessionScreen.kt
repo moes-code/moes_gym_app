@@ -69,6 +69,7 @@ fun SessionScreen(
 ) {
     val plan by viewModel.plan.collectAsState()
     val exerciseTemplates by viewModel.exerciseTemplates.collectAsState()
+    val lastSetData by viewModel.lastSetData.collectAsState()
     val alternatives by viewModel.alternatives.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
@@ -109,9 +110,12 @@ fun SessionScreen(
         ) {
             items(entries) { entry ->
                 val templates = exerciseTemplates[entry.entry.exerciseId] ?: emptyList()
+                val (lastWeight, lastReps) = lastSetData[entry.entry.exerciseId] ?: ("" to "")
                 ExerciseCard(
                     entry = entry,
                     templates = templates,
+                    lastWeight = lastWeight,
+                    lastReps = lastReps,
                     onLog = { sets ->
                         viewModel.logSets(entry.entry.exerciseId, sets)
                         scope.launch { snackbarHostState.showSnackbar("Sets logged") }
@@ -164,6 +168,8 @@ fun SessionScreen(
 private fun ExerciseCard(
     entry: WorkoutPlanEntryWithExercise,
     templates: List<WorkoutSetTemplate>,
+    lastWeight: String,
+    lastReps: String,
     onLog: (List<WorkoutSet>) -> Unit,
     onAlternatives: () -> Unit
 ) {
@@ -171,10 +177,10 @@ private fun ExerciseCard(
     var showWeight by remember { mutableStateOf(false) }
 
     val defaultSets = if (templates.isNotEmpty()) {
-        templates.map { EditableSet(it.setNumber, restTime = it.restTime) }
+        templates.map { EditableSet(it.setNumber, restTime = it.restTime, weight = lastWeight, reps = lastReps) }
     } else {
         val count = exercise.defaultSets ?: 1
-        (1..count).map { EditableSet(it, restTime = exercise.defaultRestTime ?: 120) }
+        (1..count).map { EditableSet(it, restTime = exercise.defaultRestTime ?: 120, weight = lastWeight, reps = lastReps) }
     }
     var sets by remember(exercise.id, templates) { mutableStateOf(defaultSets) }
 

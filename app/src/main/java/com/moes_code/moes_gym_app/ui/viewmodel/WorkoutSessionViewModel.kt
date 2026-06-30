@@ -27,6 +27,9 @@ class WorkoutSessionViewModel(
     private val _exerciseTemplates = MutableStateFlow<Map<Long, List<WorkoutSetTemplate>>>(emptyMap())
     val exerciseTemplates: StateFlow<Map<Long, List<WorkoutSetTemplate>>> = _exerciseTemplates.asStateFlow()
 
+    private val _lastSetData = MutableStateFlow<Map<Long, Pair<String, String>>>(emptyMap())
+    val lastSetData: StateFlow<Map<Long, Pair<String, String>>> = _lastSetData.asStateFlow()
+
     private val _alternatives = MutableStateFlow<List<Exercise>>(emptyList())
     val alternatives: StateFlow<List<Exercise>> = _alternatives.asStateFlow()
 
@@ -36,16 +39,28 @@ class WorkoutSessionViewModel(
     init {
         viewModelScope.launch {
             repository.rotateExerciseIfNeeded(planId)
-            loadTemplatesFromDb()
+            loadExerciseData()
             _isLoading.value = false
         }
     }
 
-    private suspend fun loadTemplatesFromDb() {
+    private suspend fun loadExerciseData() {
         val entries = repository.getEntriesForPlan(planId)
         val exerciseIds = entries.map { it.exerciseId }
+
         val allTemplates = repository.getTemplatesForExercises(exerciseIds)
         _exerciseTemplates.value = allTemplates.groupBy { it.exerciseId }
+
+        val setData = mutableMapOf<Long, Pair<String, String>>()
+        for (id in exerciseIds) {
+            val last = repository.getLastSetForExercise(id)
+            if (last != null) {
+                val weight = last.weight?.toString()?.removeSuffix(".0") ?: ""
+                val reps = last.reps?.toString() ?: ""
+                setData[id] = weight to reps
+            }
+        }
+        _lastSetData.value = setData
     }
 
     fun loadAlternatives(exerciseId: Long) {
@@ -57,14 +72,14 @@ class WorkoutSessionViewModel(
     fun selectAlternative(position: Int, newExerciseId: Long) {
         viewModelScope.launch {
             repository.selectAlternative(planId, position, newExerciseId)
-            loadTemplatesFromDb()
+            loadExerciseData()
         }
     }
 
     fun logSets(exerciseId: Long, sets: List<WorkoutSet>) {
         viewModelScope.launch {
             repository.logSets(exerciseId, sets)
-            loadTemplatesFromDb()
+            loadExerciseData()
         }
     }
 }

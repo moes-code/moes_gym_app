@@ -22,4 +22,7 @@ interface WorkoutSetDao {
 
     @Query("SELECT * FROM workout_sets WHERE exercise_id = :exerciseId ORDER BY timestamp DESC")
     fun getSetsForExercise(exerciseId: Long): Flow<List<WorkoutSet>>
+
+    @Query("SELECT * FROM workout_sets WHERE exercise_id = :exerciseId ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getLastSetForExercise(exerciseId: Long): WorkoutSet?
 }
