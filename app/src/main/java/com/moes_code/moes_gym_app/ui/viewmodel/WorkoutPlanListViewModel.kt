@@ -22,12 +22,6 @@ class WorkoutPlanListViewModel(
         }
     }
 
-    fun updatePlan(plan: WorkoutPlan) {
-        viewModelScope.launch {
-            repository.updateWorkoutPlan(plan)
-        }
-    }
-
     fun deletePlan(plan: WorkoutPlan) {
         viewModelScope.launch {
             repository.deleteWorkoutPlan(plan)

@@ -87,6 +87,8 @@ class GymRepository(private val db: GymDatabase) {
         }
     }
 
+    fun getAllExercises(): Flow<List<Exercise>> = exerciseDao.getAllExercises()
+
     suspend fun insertExercise(exercise: Exercise): Long = exerciseDao.insert(exercise)
 
     suspend fun updateExercise(exercise: Exercise) = exerciseDao.update(exercise)
@@ -98,4 +100,13 @@ class GymRepository(private val db: GymDatabase) {
     suspend fun deleteWorkoutPlan(plan: WorkoutPlan) = workoutPlanDao.delete(plan)
 
     suspend fun insertWorkoutPlanEntry(entry: WorkoutPlanEntry): Long = workoutPlanEntryDao.insert(entry)
+
+    suspend fun addExerciseToPlan(planId: Long, exerciseId: Long) {
+        val position = workoutPlanEntryDao.getNextPosition(planId)
+        workoutPlanEntryDao.insert(WorkoutPlanEntry(planId = planId, position = position, exerciseId = exerciseId))
+    }
+
+    suspend fun removeExerciseFromPlan(planId: Long, position: Int) {
+        workoutPlanEntryDao.deleteByPlanIdAndPosition(planId, position)
+    }
 }

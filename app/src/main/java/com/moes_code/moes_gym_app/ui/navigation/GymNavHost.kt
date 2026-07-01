@@ -10,8 +10,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.moes_code.moes_gym_app.data.repository.GymRepository
+import com.moes_code.moes_gym_app.ui.screen.EditPlanScreen
 import com.moes_code.moes_gym_app.ui.screen.PlanListScreen
 import com.moes_code.moes_gym_app.ui.screen.SessionScreen
+import com.moes_code.moes_gym_app.ui.viewmodel.EditPlanViewModel
 import com.moes_code.moes_gym_app.ui.viewmodel.GymViewModelFactory
 import com.moes_code.moes_gym_app.ui.viewmodel.WorkoutPlanListViewModel
 import com.moes_code.moes_gym_app.ui.viewmodel.WorkoutSessionViewModel
@@ -29,8 +31,8 @@ fun GymNavHost(repository: GymRepository) {
             PlanListScreen(
                 plans = plans,
                 onPlanClick = { planId -> navController.navigate("session/$planId") },
+                onEditPlan = { planId -> navController.navigate("editPlan/$planId") },
                 onCreatePlan = { name, desc -> viewModel.createPlan(name, desc) },
-                onUpdatePlan = { plan -> viewModel.updatePlan(plan) },
                 onDeletePlan = { plan -> viewModel.deletePlan(plan) }
             )
         }
@@ -44,6 +46,20 @@ fun GymNavHost(repository: GymRepository) {
             val viewModel = viewModel<WorkoutSessionViewModel>(factory = factory)
 
             SessionScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = "editPlan/{planId}",
+            arguments = listOf(navArgument("planId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val planId = backStackEntry.arguments?.getLong("planId") ?: return@composable
+            val factory = GymViewModelFactory(repository, planId)
+            val viewModel = viewModel<EditPlanViewModel>(factory = factory)
+
+            EditPlanScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() }
             )

@@ -22,6 +22,12 @@ interface WorkoutPlanEntryDao {
     @Query("SELECT * FROM workout_plan_entries WHERE plan_id = :planId ORDER BY position ASC")
     suspend fun getEntriesForPlan(planId: Long): List<WorkoutPlanEntry>
 
+    @Query("SELECT COALESCE(MAX(position), 0) + 1 FROM workout_plan_entries WHERE plan_id = :planId")
+    suspend fun getNextPosition(planId: Long): Int
+
+    @Query("DELETE FROM workout_plan_entries WHERE plan_id = :planId AND position = :position")
+    suspend fun deleteByPlanIdAndPosition(planId: Long, position: Int)
+
     @Query("UPDATE workout_plan_entries SET exercise_id = :exerciseId WHERE plan_id = :planId AND position = :position")
     suspend fun updateExerciseId(planId: Long, position: Int, exerciseId: Long): Int
 }

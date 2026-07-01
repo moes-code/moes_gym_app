@@ -42,12 +42,11 @@ import com.moes_code.moes_gym_app.model.WorkoutPlan
 fun PlanListScreen(
     plans: List<WorkoutPlan>,
     onPlanClick: (Long) -> Unit,
+    onEditPlan: (Long) -> Unit,
     onCreatePlan: (String, String?) -> Unit,
-    onUpdatePlan: (WorkoutPlan) -> Unit,
     onDeletePlan: (WorkoutPlan) -> Unit
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
-    var editingPlan by remember { mutableStateOf<WorkoutPlan?>(null) }
     var deletingPlan by remember { mutableStateOf<WorkoutPlan?>(null) }
 
     Scaffold(
@@ -85,7 +84,7 @@ fun PlanListScreen(
                     PlanCard(
                         plan = plan,
                         onClick = { onPlanClick(plan.id) },
-                        onEdit = { editingPlan = plan },
+                        onEdit = { onEditPlan(plan.id) },
                         onDelete = { deletingPlan = plan }
                     )
                 }
@@ -94,28 +93,12 @@ fun PlanListScreen(
     }
 
     if (showCreateDialog) {
-        PlanFormDialog(
-            title = "Create Plan",
-            initialName = "",
-            initialDescription = "",
+        CreatePlanDialog(
             onConfirm = { name, desc ->
                 onCreatePlan(name, desc)
                 showCreateDialog = false
             },
             onDismiss = { showCreateDialog = false }
-        )
-    }
-
-    editingPlan?.let { plan ->
-        PlanFormDialog(
-            title = "Edit Plan",
-            initialName = plan.name,
-            initialDescription = plan.description ?: "",
-            onConfirm = { name, desc ->
-                onUpdatePlan(plan.copy(name = name, description = desc?.ifBlank { null }))
-                editingPlan = null
-            },
-            onDismiss = { editingPlan = null }
         )
     }
 
@@ -210,19 +193,16 @@ private fun PlanCard(
 }
 
 @Composable
-private fun PlanFormDialog(
-    title: String,
-    initialName: String,
-    initialDescription: String,
+private fun CreatePlanDialog(
     onConfirm: (String, String?) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var name by remember { mutableStateOf(initialName) }
-    var description by remember { mutableStateOf(initialDescription) }
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
+        title = { Text("Create Plan") },
         text = {
             Column {
                 OutlinedTextField(

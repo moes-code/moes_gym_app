@@ -14,6 +14,7 @@ class GymViewModelFactory(
         return when (modelClass) {
             WorkoutPlanListViewModel::class.java -> WorkoutPlanListViewModel(repository) as T
             WorkoutSessionViewModel::class.java -> WorkoutSessionViewModel(requireNotNull(planId) { "WorkoutSessionViewModel requires a non-null planId" }, repository) as T
+            EditPlanViewModel::class.java -> EditPlanViewModel(requireNotNull(planId) { "EditPlanViewModel requires a non-null planId" }, repository) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }
