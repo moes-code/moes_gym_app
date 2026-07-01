@@ -93,5 +93,9 @@ class GymRepository(private val db: GymDatabase) {
 
     suspend fun insertWorkoutPlan(plan: WorkoutPlan): Long = workoutPlanDao.insert(plan)
 
+    suspend fun updateWorkoutPlan(plan: WorkoutPlan) = workoutPlanDao.update(plan)
+
+    suspend fun deleteWorkoutPlan(plan: WorkoutPlan) = workoutPlanDao.delete(plan)
+
     suspend fun insertWorkoutPlanEntry(entry: WorkoutPlanEntry): Long = workoutPlanEntryDao.insert(entry)
 }

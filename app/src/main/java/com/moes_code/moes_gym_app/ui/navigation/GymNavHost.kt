@@ -28,7 +28,10 @@ fun GymNavHost(repository: GymRepository) {
 
             PlanListScreen(
                 plans = plans,
-                onPlanClick = { planId -> navController.navigate("session/$planId") }
+                onPlanClick = { planId -> navController.navigate("session/$planId") },
+                onCreatePlan = { name, desc -> viewModel.createPlan(name, desc) },
+                onUpdatePlan = { plan -> viewModel.updatePlan(plan) },
+                onDeletePlan = { plan -> viewModel.deletePlan(plan) }
             )
         }
 
