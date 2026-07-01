@@ -30,6 +30,9 @@ class WorkoutSessionViewModel(
     private val _lastSetData = MutableStateFlow<Map<Long, Pair<String, String>>>(emptyMap())
     val lastSetData: StateFlow<Map<Long, Pair<String, String>>> = _lastSetData.asStateFlow()
 
+    private val _history = MutableStateFlow<List<WorkoutSet>>(emptyList())
+    val history: StateFlow<List<WorkoutSet>> = _history.asStateFlow()
+
     private val _alternatives = MutableStateFlow<List<Exercise>>(emptyList())
     val alternatives: StateFlow<List<Exercise>> = _alternatives.asStateFlow()
 
@@ -61,6 +64,12 @@ class WorkoutSessionViewModel(
             }
         }
         _lastSetData.value = setData
+    }
+
+    fun loadHistory(exerciseId: Long) {
+        viewModelScope.launch {
+            _history.value = repository.getSetsForExercise(exerciseId).first()
+        }
     }
 
     fun loadAlternatives(exerciseId: Long) {

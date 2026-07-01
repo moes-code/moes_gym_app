@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -71,10 +72,13 @@ fun SessionScreen(
     val exerciseTemplates by viewModel.exerciseTemplates.collectAsState()
     val lastSetData by viewModel.lastSetData.collectAsState()
     val alternatives by viewModel.alternatives.collectAsState()
+    val history by viewModel.history.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     var showAlternatives by remember { mutableStateOf(false) }
     var altPosition by remember { mutableIntStateOf(0) }
+    var showHistory by remember { mutableStateOf(false) }
+    var historyExerciseName by remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -124,6 +128,11 @@ fun SessionScreen(
                         viewModel.loadAlternatives(entry.entry.exerciseId)
                         altPosition = entry.entry.position
                         showAlternatives = true
+                    },
+                    onHistory = {
+                        viewModel.loadHistory(entry.entry.exerciseId)
+                        historyExerciseName = entry.exercise.name
+                        showHistory = true
                     }
                 )
             }
@@ -162,6 +171,68 @@ fun SessionScreen(
             }
         }
     }
+
+    if (showHistory) {
+        val sheetState = rememberModalBottomSheetState()
+        val grouped = history.groupBy { formatTimestamp(it.timestamp) }
+            .toSortedMap(compareByDescending { it })
+
+        ModalBottomSheet(
+            onDismissRequest = { showHistory = false },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ) {
+            LazyColumn(modifier = Modifier.padding(bottom = 24.dp)) {
+                item {
+                    Text(
+                        text = "History: $historyExerciseName",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                    )
+                }
+                grouped.forEach { (date, sets) ->
+                    item {
+                        Text(
+                            text = date,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                        )
+                    }
+                    items(sets) { set ->
+                        val text = buildString {
+                            append("Set ${set.number}")
+                            set.weight?.let { w -> append(" — ${w.toString().removeSuffix(".0")} kg") }
+                            set.reps?.let { r -> append(" × $r reps") }
+                            set.durationSeconds?.let { d -> append(" — ${d}s") }
+                        }
+                        ListItem(
+                            headlineContent = { Text(text) },
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                    item {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            thickness = 0.5.dp,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+                if (history.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No sets logged yet",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -171,7 +242,8 @@ private fun ExerciseCard(
     lastWeight: String,
     lastReps: String,
     onLog: (List<WorkoutSet>) -> Unit,
-    onAlternatives: () -> Unit
+    onAlternatives: () -> Unit,
+    onHistory: () -> Unit
 ) {
     val exercise = entry.exercise
     var showWeight by remember { mutableStateOf(false) }
@@ -204,6 +276,13 @@ private fun ExerciseCard(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
+                IconButton(onClick = onHistory) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.List,
+                        contentDescription = "History",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
                 IconButton(onClick = onAlternatives) {
                     Icon(
                         Icons.Default.Refresh,
