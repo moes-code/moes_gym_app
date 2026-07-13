@@ -1,2 +1,1 @@
-# moes_gym_app
-Moe's GYM App
+# Moe's GYM App
